@@ -1,0 +1,27 @@
+pipeline {
+    tools {
+  terraform 'terraform-17'
+}
+
+agent any 
+environment{
+    AWS_ACCES_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+}
+
+stages {
+    stage('checkout') {
+        steps {
+            git branch: 'main', credentialsId: 'GitHUB', url: 'https://github.com/Manikantamarreddi/Terraform-Jenkins.git'
+        }
+    }
+    
+    stage('Destroy') {
+        steps {
+            sh 'terraform destroy -auto-approve'
+        }
+    }
+}
+
+
+}
