@@ -15,6 +15,12 @@ stages {
             git branch: 'main', credentialsId: 'GitHUB', url: 'https://github.com/Manikantamarreddi/Terraform-Jenkins.git'
         }
     }
+
+    stage('init') {
+        steps {
+            sh 'terraform int'
+        }
+    }
     
     stage('Destroy') {
         steps {
