@@ -1,4 +1,8 @@
 pipeline {
+    tools {
+  terraform 'terraform-17'
+}
+
     parameters {
         booleanParam(name: 'autoApprove', description: 'Do you want to aoto approve the pipeline', defaultValue: false)
     }
@@ -30,7 +34,6 @@ pipeline {
 
         stage('plan') {
             steps {
-                sh 'pwd;cd terraform/ ; terraform init'
                 sh 'pwd;cd terraform/ ; terraform plan -out tfplan'
                 sh 'pwd;cd terraform/ ; terraform show -no-color tfplan > tfplan.txt'
             }
@@ -46,7 +49,7 @@ pipeline {
             steps{
                 script {
                     def plan = readFile 'terraform/tfplan.txt'
-                    input message: 'Do you want to apply the plan?'
+                    input message: 'Do you want to apply the plan?',
                     parameters: [text(name: 'Plan', defaultValue: plan, description: 'please review the plan')]
                 }
             }
