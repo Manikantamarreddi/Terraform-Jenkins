@@ -1,8 +1,7 @@
 pipeline {
-
     parameters {
-  booleanParam defaultValue: flase, description: 'Automatically run apply after generating plan?', name: 'autoApprove'
-}
+        booleanParam(name: 'autoApprove', description: 'Do you want to aoto approve the pipeline', defaultValue: false)
+    }
 
     environment {
         AWS_ACCESS_KEY = credentials('AWS_ACCESS_KEY_ID')
@@ -10,11 +9,11 @@ pipeline {
     }
 
     agent any
-    
+
     stages {
-        stage('Checkout') {
-            steps {
-                script{
+        stage('checkout'){
+            steps{
+                script {
                     dir('terraform') {
                         git branch: 'main', credentialsId: 'GitHUB', url: 'https://github.com/Manikantamarreddi/Terraform-Jenkins.git'
                     }
@@ -24,37 +23,36 @@ pipeline {
 
         stage('initialize') {
             steps {
-                sh 'pwd;cd terraform/;terraform init'
+                sh 'cd terraform/'
+                sh 'terraform init'
             }
         }
 
-        stage('Plan') {
+        stage('plan') {
             steps {
-                sh 'pwd;cd terraform/;terraform plan -out tfplan'
+                sh 'cd terraform/; terraform plan -out tfplan'
                 sh 'cd terraform/; terraform show -no-color tfplan > tfplan.txt'
             }
         }
 
         stage('Approval') {
-            when {
-                not {
+            when{
+                not{
                     equals expected: true, actual: param.autoApprove
                 }
             }
 
-            steps {
+            steps{
                 script {
                     def plan = readFile 'terraform/tfplan.txt'
-                    input message: "Do you want to apply the plan?"
-                    parameters {
-  text defaultValue: 'plan', description: 'Please review the plan', name: 'Plan'
-}
+                    input message: 'Do you want to apply the plan?'
+                    parameters: [text(name: 'Plan', defaultValue: plan, description: 'please review the plan')]
                 }
             }
         }
 
-        stage ('Apply') {
-            steps {
+        stage('Apply') {
+            steps{
                 sh 'cd terraform/; terraform apply -input=false tfplan'
             }
         }
